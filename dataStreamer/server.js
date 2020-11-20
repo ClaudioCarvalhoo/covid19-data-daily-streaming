@@ -10,7 +10,6 @@ function startServer(port, path, dailyReports) {
       index++;
       if (index >= dailyReports.length) {
         clearInterval(intervalId);
-        webSocket.close();
       }
     }, 250);
   });
