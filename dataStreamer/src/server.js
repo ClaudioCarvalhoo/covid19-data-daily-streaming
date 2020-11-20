@@ -1,11 +1,11 @@
-const WebSocketServer = require("ws").Server;
+const WebSocketServer = require('ws').Server;
 
-function startServer(port, path, dailyReports) {
+const startServer = (port, path, dailyReports) => {
   const server = new WebSocketServer({ port: port, path: path });
 
-  server.on("connection", function (webSocket) {
+  server.on('connection', webSocket => {
     let index = 0;
-    let intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       sendOneRow(webSocket, dailyReports, index);
       index++;
       if (index >= dailyReports.length) {
@@ -13,11 +13,11 @@ function startServer(port, path, dailyReports) {
       }
     }, 50);
   });
-}
+};
 
-function sendOneRow(webSocket, dailyReports, index) {
-  let row = dailyReports[index];
+const sendOneRow = (webSocket, dailyReports, index) => {
+  const row = dailyReports[index];
   webSocket.send(JSON.stringify(row));
-}
+};
 
 module.exports.startServer = startServer;
