@@ -5,10 +5,14 @@ function startServer(port, path, dailyReports) {
 
   server.on("connection", function (webSocket) {
     let index = 0;
-    setInterval(() => {
+    let intervalId = setInterval(() => {
       sendOneRow(webSocket, dailyReports, index);
       index++;
-    }, 2000);
+      if (index >= dailyReports.length) {
+        clearInterval(intervalId);
+        webSocket.close();
+      }
+    }, 250);
   });
 }
 
