@@ -1,0 +1,18 @@
+{
+  "name": "dailyaggregator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudio Carvalho, Mario Bezerra and Guilherme Lima",
+  "license": "ISC",
+  "dependencies": {
+    "ampq": "^2019.5.11",
+    "amqplib": "^0.6.0",
+    "rxjs": "^6.6.3",
+    "rxjs-compat": "^6.6.3",
+    "ws": "^7.4.0"
+  }
+}
