@@ -56,6 +56,10 @@ amqp.connect("amqp://localhost", function (error0, connection) {
     dailyReportsSubject.subscribe(
       (reportInDate) => {
         nextDay.setDate(nextDay.getDate() + 1);
+        /*
+            Topic is going to get messy with duplicate messages from previous runs.
+            Find a way to ignore or update them using date as a key
+        */
         channel.sendToQueue(queue, Buffer.from(JSON.stringify(reportInDate)));
       },
       (err) => {
