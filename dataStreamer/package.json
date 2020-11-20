@@ -1,0 +1,15 @@
+{
+  "name": "datastreamer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudio Carvalho, Mario Bezerra and Guilherme Lima",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parser": "^2.3.3",
+    "ws": "^7.4.0"
+  }
+}
