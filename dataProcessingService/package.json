@@ -1,0 +1,18 @@
+{
+  "name": "dataprocessingservice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudio Carvalho, Mario Bezerra and Guilherme Lima",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/proto-loader": "^0.5.5",
+    "ampq": "^2019.5.11",
+    "amqplib": "^0.6.0",
+    "grpc": "^1.24.4",
+    "http": "0.0.1-security"
+  }
+}
