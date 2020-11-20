@@ -2,10 +2,10 @@ const csv = require("csv-parser");
 const fs = require("fs");
 const { startServer } = require("./server");
 
-let dailyInfo = [];
+let dailyReports = [];
 fs.createReadStream("./data/brazil_covid19.csv")
   .pipe(csv())
-  .on("data", (row) => dailyInfo.push(row))
+  .on("data", (row) => dailyReports.push(row))
   .on("end", () => {
-    startServer(7474, "/test", dailyInfo);
+    startServer(7474, "/test", dailyReports);
   });
