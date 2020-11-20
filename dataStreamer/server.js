@@ -11,7 +11,7 @@ function startServer(port, path, dailyReports) {
       if (index >= dailyReports.length) {
         clearInterval(intervalId);
       }
-    }, 250);
+    }, 50);
   });
 }
 

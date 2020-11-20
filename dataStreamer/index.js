@@ -7,5 +7,5 @@ fs.createReadStream("./data/brazil_covid19.csv")
   .pipe(csv())
   .on("data", (row) => dailyReports.push(row))
   .on("end", () => {
-    startServer(7474, "/test", dailyReports);
+    startServer(7474, "/reports", dailyReports);
   });
