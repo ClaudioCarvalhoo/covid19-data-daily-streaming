@@ -58,6 +58,7 @@ amqp.connect('amqp://localhost', (err0, connection) => {
 
     const queue = 'dailyReports';
     channel.assertQueue(queue, { durable: true });
+    channel.prefetch(1);
 
     channel.consume(
       queue,

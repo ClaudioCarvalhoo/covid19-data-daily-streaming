@@ -56,7 +56,10 @@ amqp.connect('amqp://localhost', (error0, connection) => {
             Topic is going to get messy with duplicate messages from previous runs.
             Find a way to ignore or update them using date as a key
         */
-        channel.sendToQueue(queue, Buffer.from(JSON.stringify(reportInDate)));
+        channel.sendToQueue(
+          queue,
+          Buffer.from(JSON.stringify(reportInDate), { persistent: true })
+        );
       },
       err => console.log(err),
       () => console.log('Subject closed')
