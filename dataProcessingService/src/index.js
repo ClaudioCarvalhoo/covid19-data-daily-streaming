@@ -1,6 +1,11 @@
 const amqp = require('amqplib/callback_api');
 const http = require('http');
 const Subject = require('rxjs/Subject').Subject;
+const fs = require('fs');
+
+const dailyReportRelativePath = './data/dailyReports.json';
+const rawDailyReport = fs.readFileSync(dailyReportRelativePath);
+const dailyReports = JSON.parse(rawDailyReport);
 
 const addBrazil = report => {
   let totalCases = 0;
@@ -16,8 +21,19 @@ const addBrazil = report => {
   };
 };
 
-let prevReport = null;
-const parseReport = curReport => {
+const getPrevReport = date => {
+  const d = new Date(date);
+  d.setDate(d.getDate() - 1);
+  const prevDate = d.toISOString().split('T')[0];
+
+  const prev = dailyReports.find(dailyReport => dailyReport.date === prevDate);
+  return prev ? prev.report : null;
+};
+
+const parseDailyReport = dailyReport => {
+  const curReport = dailyReport.report;
+  const prevReport = getPrevReport(dailyReport.date);
+
   for (const key in curReport) {
     curReport[key].cases = parseInt(curReport[key].cases);
     curReport[key].deaths = parseInt(curReport[key].deaths);
@@ -29,8 +45,6 @@ const parseReport = curReport => {
       curReport[key].newCases = curReport[key].cases;
       curReport[key].newDeaths = curReport[key].deaths;
     }
-
-    prevReport = curReport;
   }
 };
 
@@ -68,7 +82,18 @@ const server = http.createServer((_, res) => {
     dailyReport => {
       const data = JSON.parse(dailyReport.toString());
       addBrazil(data.report);
-      parseReport(data.report);
+      parseDailyReport(data);
+
+      dailyReports.push(data);
+
+      fs.writeFile(
+        dailyReportRelativePath,
+        JSON.stringify(dailyReports),
+        err => {
+          if (err) throw err;
+        }
+      );
+
       res.write(JSON.stringify(data));
     },
     err => console.log(err),
