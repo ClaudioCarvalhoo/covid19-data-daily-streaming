@@ -1,1 +1,1 @@
-export { fetchStreamData } from "./dashboard";
+export { fetchStreamData, fetchStatePopulation } from "./dashboard";

@@ -509,3 +509,24 @@ footer ul li a:hover {
 * {
   letter-spacing: normal !important;
 }
+
+.ct-series-a .ct-bar,
+.ct-series-a .ct-line,
+.ct-series-a .ct-point,
+.ct-series-a .ct-slice-donut {
+  stroke: #ffa726;
+}
+.ct-series-b .ct-bar,
+.ct-series-b .ct-line,
+.ct-series-b .ct-point,
+.ct-series-b .ct-slice-donut {
+  stroke: #e73e3a;
+}
+
+.makeStyles-successCardHeader-85:not(.makeStyles-cardHeaderIcon-83) {
+  background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
+}
+
+.makeStyles-warningCardHeader-84:not(.makeStyles-cardHeaderIcon-83) {
+  background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
+}
