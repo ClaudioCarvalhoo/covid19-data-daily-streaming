@@ -7,6 +7,17 @@ const dailyReportRelativePath = './data/dailyReports.json';
 const rawDailyReport = fs.readFileSync(dailyReportRelativePath);
 const dailyReports = JSON.parse(rawDailyReport);
 
+const shutdown = () => {
+  console.log('Received kill signal, shutting down gracefully');
+  fs.writeFile(dailyReportRelativePath, JSON.stringify(dailyReports), err => {
+    if (err) throw err;
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
 const addBrazil = report => {
   let totalCases = 0;
   let totalDeaths = 0;
