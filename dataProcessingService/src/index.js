@@ -72,7 +72,7 @@ amqp.connect('amqp://localhost', (err0, connection) => {
 });
 
 const server = http.createServer((_, res) => {
-  res.writeHeader(200, {
+  res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
@@ -95,7 +95,7 @@ const server = http.createServer((_, res) => {
         }
       );
 
-      res.write(JSON.stringify(data));
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
     },
     err => console.log(err),
     () => console.log('Connection closed')
