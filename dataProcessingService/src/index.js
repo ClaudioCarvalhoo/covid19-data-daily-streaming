@@ -18,15 +18,15 @@ const shutdown = () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-const addBrazil = report => {
+const addBrazil = reports => {
   let totalCases = 0;
   let totalDeaths = 0;
-  for (const key in report) {
-    totalCases += parseInt(report[key].cases);
-    totalDeaths += parseInt(report[key].deaths);
+  for (const key in reports) {
+    totalCases += parseInt(reports[key].cases);
+    totalDeaths += parseInt(reports[key].deaths);
   }
 
-  report.BR = {
+  reports.BR = {
     cases: totalCases,
     deaths: totalDeaths,
   };
@@ -42,7 +42,7 @@ const getPrevReport = date => {
 };
 
 const parseDailyReport = dailyReport => {
-  const curReport = dailyReport.report;
+  const curReport = dailyReport.reports;
   const prevReport = getPrevReport(dailyReport.date);
 
   for (const key in curReport) {
@@ -93,7 +93,7 @@ const server = http.createServer((_, res) => {
   dailyReportSubject.subscribe(
     dailyReport => {
       const data = JSON.parse(dailyReport.toString());
-      addBrazil(data.report);
+      addBrazil(data.reports);
       parseDailyReport(data);
 
       dailyReports.push(data);
