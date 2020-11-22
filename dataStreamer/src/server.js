@@ -13,6 +13,8 @@ const startServer = (port, path, dailyReports) => {
       }
     }, 50);
   });
+
+  console.log(`Server listening at ${port}`);
 };
 
 const sendOneRow = (webSocket, dailyReports, index) => {

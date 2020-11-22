@@ -3,6 +3,10 @@ const http = require('http');
 const Subject = require('rxjs/Subject').Subject;
 const fs = require('fs');
 
+const RABBITMQ_SERVER_ADDR = process.env.RABBITMQ_SERVER_ADDR
+  ? process.env.RABBITMQ_SERVER_ADDR
+  : 'localhost';
+
 const dailyReportRelativePath = './data/dailyReports.json';
 const rawDailyReport = fs.readFileSync(dailyReportRelativePath);
 const dailyReports = JSON.parse(rawDailyReport);
@@ -73,7 +77,7 @@ const parseDailyReport = (dailyReport, reportList) => {
 
 const dailyReportSubject = new Subject();
 
-amqp.connect('amqp://localhost', (err0, connection) => {
+amqp.connect(`amqp://${RABBITMQ_SERVER_ADDR}`, (err0, connection) => {
   if (err0) throw err0;
 
   connection.createChannel((err1, channel) => {
