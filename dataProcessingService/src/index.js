@@ -18,12 +18,12 @@ const shutdown = () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-const addBrazil = reports => {
+const addBrazil = (reports, reportList) => {
   let totalCases = 0;
   let totalDeaths = 0;
-  for (const key in reports) {
-    totalCases += parseInt(reports[key].cases);
-    totalDeaths += parseInt(reports[key].deaths);
+  for (const i in reportList) {
+    totalCases += parseInt(reportList[i].cases);
+    totalDeaths += parseInt(reportList[i].deaths);
   }
 
   reports.BR = {
@@ -38,24 +38,36 @@ const getPrevReport = date => {
   const prevDate = d.toISOString().split('T')[0];
 
   const prev = dailyReports.find(dailyReport => dailyReport.date === prevDate);
-  return prev ? prev.report : null;
+  return prev ? prev.reports : null;
 };
 
-const parseDailyReport = dailyReport => {
+const parseDailyReport = (dailyReport, reportList) => {
   const curReport = dailyReport.reports;
   const prevReport = getPrevReport(dailyReport.date);
 
-  for (const key in curReport) {
-    curReport[key].cases = parseInt(curReport[key].cases);
-    curReport[key].deaths = parseInt(curReport[key].deaths);
+  for (const i in reportList) {
+    const key = reportList[i].state;
+    if (!curReport[key]) curReport[key] = {};
+
+    curReport[key].cases = parseInt(reportList[i].cases);
+    curReport[key].deaths = parseInt(reportList[i].deaths);
 
     if (prevReport) {
-      curReport[key].newCases = curReport[key].cases - prevReport[key].cases;
-      curReport[key].newDeaths = curReport[key].deaths - prevReport[key].deaths;
+      curReport[key].newCases = reportList[i].cases - prevReport[key].cases;
+      curReport[key].newDeaths = reportList[i].deaths - prevReport[key].deaths;
     } else {
-      curReport[key].newCases = curReport[key].cases;
-      curReport[key].newDeaths = curReport[key].deaths;
+      curReport[key].newCases = reportList[i].cases;
+      curReport[key].newDeaths = reportList[i].deaths;
     }
+  }
+
+  if (prevReport) {
+    curReport['BR'].newCases = curReport['BR'].cases - prevReport['BR'].cases;
+    curReport['BR'].newDeaths =
+      curReport['BR'].deaths - prevReport['BR'].deaths;
+  } else {
+    curReport['BR'].newCases = curReport['BR'].cases;
+    curReport['BR'].newDeaths = curReport['BR'].deaths;
   }
 };
 
@@ -93,8 +105,11 @@ const server = http.createServer((_, res) => {
   dailyReportSubject.subscribe(
     dailyReport => {
       const data = JSON.parse(dailyReport.toString());
-      addBrazil(data.reports);
-      parseDailyReport(data);
+      const reportList = data.reports;
+      data.reports = {};
+
+      addBrazil(data.reports, reportList);
+      parseDailyReport(data, reportList);
 
       dailyReports.push(data);
 
