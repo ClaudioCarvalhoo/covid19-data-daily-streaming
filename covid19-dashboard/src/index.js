@@ -17,18 +17,20 @@
 */
 import React from "react";
 import ReactDOM from "react-dom";
-import { createStore } from "redux";
-import { Provider } from "react-redux";
+import { createStore, applyMiddleware } from "redux";
+import { Provider, useDispatch } from "react-redux";
 import { createBrowserHistory } from "history";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import rootReducer from "./store/reducers/index";
+import thunk from "redux-thunk";
+
 // core components
 import Admin from "layouts/Admin.js";
-
+import { fetchStreamData } from "./store/actions/index";
 import "assets/css/material-dashboard-react.css?v=1.9.0";
 
 const hist = createBrowserHistory();
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
 ReactDOM.render(
   <Provider store={store}>

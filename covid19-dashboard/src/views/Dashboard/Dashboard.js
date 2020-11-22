@@ -1,5 +1,5 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 // react plugin for creating charts
 import ChartistGraph from "react-chartist";
 // @material-ui/core
@@ -9,6 +9,7 @@ import { Icon, Typography } from "@material-ui/core";
 import Store from "@material-ui/icons/Store";
 import Warning from "@material-ui/icons/Warning";
 import CancelIcon from "@material-ui/icons/Cancel";
+import WarningIcon from "@material-ui/icons/Warning";
 import DateRange from "@material-ui/icons/DateRange";
 import LocalOffer from "@material-ui/icons/LocalOffer";
 import Update from "@material-ui/icons/Update";
@@ -32,6 +33,11 @@ import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
 import { bugs, website, server } from "variables/general.js";
+import Chartist from "chartist";
+import {
+  fetchStreamData,
+  fetchStatePopulation,
+} from "../../store/actions/index";
 
 import {
   dailySalesChart,
@@ -43,13 +49,149 @@ import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js"
 
 const useStyles = makeStyles(styles);
 
+function monthNumberToString(monthNumber) {
+  switch (monthNumber) {
+    case "01":
+      return "Janeiro";
+    case "02":
+      return "Fevereiro";
+    case "03":
+      return "Março";
+    case "04":
+      return "Abril";
+    case "05":
+      return "Maio";
+    case "06":
+      return "Junho";
+    case "07":
+      return "Julho";
+    case "08":
+      return "Agosto";
+    case "09":
+      return "Setembro";
+    case "10":
+      return "Outubro";
+    case "11":
+      return "Novembro";
+    case "12":
+      return "Dezembro";
+    default:
+      return "";
+  }
+}
+
+function increaseText(increaseRate) {
+  if (increaseRate >= 50) {
+    return `Aumentando rapidamente. ${increaseRate}% more`;
+  }
+  if (increaseRate < 50 && increaseRate >= 30) {
+    return `Aumentando moderadamente. ${increaseRate}% more`;
+  }
+  if (increaseRate < 30 && increaseRate > 0) {
+    return `Aumentando levemente. ${increaseRate}% more`;
+  } else {
+    return `Estável`;
+  }
+}
+
 export default function Dashboard() {
   const classes = useStyles();
+  const dispatch = useDispatch();
 
-  const currentMonth = useSelector((state) => state.dashboard.currentMonth);
-  const lastSevenDays_cases = useSelector(
-    (state) => state.dashboard.lastSevenDays_cases
-  );
+  const data = useSelector((state) => state.dashboard);
+  console.log(data);
+
+  useEffect(() => {
+    dispatch(fetchStreamData());
+    dispatch(fetchStatePopulation());
+  }, [dispatch]);
+
+  function buildChart(chartData) {
+    return {
+      labels: ["", "", "", "", "", "", ""],
+      series: [chartData],
+    };
+  }
+
+  function buildBarChart(chartData) {
+    return {
+      labels: [
+        "Jan",
+        "Fev",
+        "Mar",
+        "Abr",
+        "Mai",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Set",
+        "Out",
+        "Nov",
+        "Dez",
+      ],
+      series: chartData,
+    };
+  }
+  function buildChartOptions(chartData) {
+    const high =
+      chartData.reduce(function (a, b) {
+        return Math.max(a, b);
+      }) + 100;
+
+    return {
+      lineSmooth: Chartist.Interpolation.cardinal({
+        tension: 0,
+      }),
+      low: 0,
+      high: high,
+      chartPadding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      },
+      axisY: {
+        labelInterpolationFnc: function (value) {
+          if (value >= 1000) return value / 1000 + "k";
+          if (value >= 1000000) return value / 1000000 + "kk";
+          return value;
+        },
+      },
+    };
+  }
+
+  function buildBarChartOptions(chartData) {
+    const high =
+      Math.max(
+        chartData[0].reduce(function (a, b) {
+          return Math.max(a, b);
+        }),
+        chartData[1].reduce(function (a, b) {
+          return Math.max(a, b);
+        })
+      ) + 100;
+
+    return {
+      lineSmooth: Chartist.Interpolation.cardinal({
+        tension: 0,
+      }),
+      low: 0,
+      high: high,
+      chartPadding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      },
+      axisY: {
+        labelInterpolationFnc: function (value) {
+          if (value >= 1000) return value / 1000 + "k";
+          if (value >= 1000000) return value / 1000000 + "kk";
+          return value;
+        },
+      },
+    };
+  }
 
   return (
     <div>
@@ -61,7 +203,9 @@ export default function Dashboard() {
                 <CancelIcon />
               </CardIcon>
               <p className={classes.cardCategory}>Mortes Confirmadas</p>
-              <h3 className={classes.cardTitle}>0</h3>
+              <h3 className={classes.cardTitle}>
+                {data.data.reports ? data.data.reports.BR.deaths : ""}
+              </h3>
             </CardHeader>
             <CardFooter stats>
               <div className={classes.stats}>
@@ -69,28 +213,7 @@ export default function Dashboard() {
                   <Warning />
                 </Danger>
                 <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                  Aumentando Rapidamente
-                </a>
-              </div>
-            </CardFooter>
-          </Card>
-        </GridItem>
-        <GridItem xs={12} sm={6} md={3}>
-          <Card>
-            <CardHeader color="danger" stats icon>
-              <CardIcon color="danger">
-                <CancelIcon />
-              </CardIcon>
-              <p className={classes.cardCategory}>Casos Confirmados</p>
-              <h3 className={classes.cardTitle}>0</h3>
-            </CardHeader>
-            <CardFooter stats>
-              <div className={classes.stats}>
-                <Danger>
-                  <Warning />
-                </Danger>
-                <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                  Aumetando Rapidamente. Hoje: 4
+                  {increaseText(data.rate_deaths)}
                 </a>
               </div>
             </CardFooter>
@@ -100,19 +223,43 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="warning" stats icon>
               <CardIcon color="warning">
-                <Icon>info_outline</Icon>
+                <WarningIcon />
               </CardIcon>
-              <p className={classes.cardCategory}>Informações Gerais</p>
-              <Typography variant="body1" className={classes.cardTitle}>
-                Dias desde o começo: 0
-              </Typography>
+              <p className={classes.cardCategory}>Casos Confirmados</p>
+              <h3 className={classes.cardTitle}>
+                {data.data.reports ? data.data.reports.BR.cases : ""}
+              </h3>
             </CardHeader>
             <CardFooter stats>
               <div className={classes.stats}>
-                <LocalOffer />
-                Tracked from Github
+                <Danger>
+                  <Warning />
+                </Danger>
+                <a href="#pablo" onClick={(e) => e.preventDefault()}>
+                  {increaseText(data.rate_cases)}
+                </a>
               </div>
             </CardFooter>
+          </Card>
+        </GridItem>
+        <GridItem xs={12} sm={6} md={3}>
+          <Card>
+            <CardHeader color="primary" stats icon>
+              <CardIcon color="primary">
+                <Icon>info_outline</Icon>
+              </CardIcon>
+              <p className={classes.cardCategory}>Informações Gerais</p>
+              <Typography variant="body2" className={classes.cardTitle}>
+                Dias desde o começo: {data.daysSinceStarted}
+              </Typography>
+              <Typography variant="body2" className={classes.cardTitle}>
+                Casos hoje: {data.today_cases}
+              </Typography>
+              <Typography variant="body2" className={classes.cardTitle}>
+                Mortes hoje: {data.today_deaths}
+              </Typography>
+            </CardHeader>
+            <CardFooter stats></CardFooter>
           </Card>
         </GridItem>
       </GridContainer>
@@ -123,14 +270,45 @@ export default function Dashboard() {
             <CardHeader color="success">
               <ChartistGraph
                 className="ct-chart"
-                data={dailySalesChart.data}
+                data={buildChart(data.lastSevenDays_newCases)}
                 type="Line"
-                options={dailySalesChart.options}
+                options={buildChartOptions(data.lastSevenDays_newCases)}
                 listener={dailySalesChart.animation}
               />
             </CardHeader>
             <CardBody>
-              <h4 className={classes.cardTitle}>Análise Semanal</h4>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Novos Casos
+              </h4>
+              <p className={classes.cardCategory}>
+                <span className={classes.successText}>
+                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
+                </span>{" "}
+                de aumento desde a semana anterior.
+              </p>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> Atualizado em {data.timeLastUpdated.toString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color="success">
+              <ChartistGraph
+                className="ct-chart"
+                data={buildChart(data.lastSevenDays_cases)}
+                type="Line"
+                options={buildChartOptions(data.lastSevenDays_cases)}
+                listener={dailySalesChart.animation}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Casos Absolutos
+              </h4>
               <p className={classes.cardCategory}>
                 <span className={classes.successText}>
                   <ArrowUpward className={classes.upArrowCardCategory} /> 55%
@@ -141,29 +319,6 @@ export default function Dashboard() {
             <CardFooter chart>
               <div className={classes.stats}>
                 <AccessTime /> Atualizado
-              </div>
-            </CardFooter>
-          </Card>
-        </GridItem>
-        <GridItem xs={12} sm={12} md={6}>
-          <Card chart>
-            <CardHeader color="warning">
-              <ChartistGraph
-                className="ct-chart"
-                data={emailsSubscriptionChart.data}
-                type="Bar"
-                options={emailsSubscriptionChart.options}
-                responsiveOptions={emailsSubscriptionChart.responsiveOptions}
-                listener={emailsSubscriptionChart.animation}
-              />
-            </CardHeader>
-            <CardBody>
-              <h4 className={classes.cardTitle}>Análise Mensal</h4>
-              <p className={classes.cardCategory}>O Mês </p>
-            </CardBody>
-            <CardFooter chart>
-              <div className={classes.stats}>
-                <AccessTime /> atualizado
               </div>
             </CardFooter>
           </Card>
@@ -175,14 +330,45 @@ export default function Dashboard() {
             <CardHeader color="success">
               <ChartistGraph
                 className="ct-chart"
-                data={dailySalesChart.data}
+                data={buildChart(data.lastSevenDays_newDeaths)}
                 type="Line"
-                options={dailySalesChart.options}
+                options={buildChartOptions(data.lastSevenDays_newDeaths)}
                 listener={dailySalesChart.animation}
               />
             </CardHeader>
             <CardBody>
-              <h4 className={classes.cardTitle}>Análise Semanal</h4>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Novas Mortes
+              </h4>
+              <p className={classes.cardCategory}>
+                <span className={classes.successText}>
+                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
+                </span>{" "}
+                de aumento desde a semana anterior.
+              </p>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> Atualizado em {data.timeLastUpdated.toString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color="success">
+              <ChartistGraph
+                className="ct-chart"
+                data={buildChart(data.lastSevenDays_deaths)}
+                type="Line"
+                options={buildChartOptions(data.lastSevenDays_deaths)}
+                listener={dailySalesChart.animation}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Mortes Absolutas
+              </h4>
               <p className={classes.cardCategory}>
                 <span className={classes.successText}>
                   <ArrowUpward className={classes.upArrowCardCategory} /> 55%
@@ -197,20 +383,25 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={12} md={6}>
+      </GridContainer>
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
           <Card chart>
             <CardHeader color="warning">
               <ChartistGraph
                 className="ct-chart"
-                data={emailsSubscriptionChart.data}
+                data={buildBarChart([data.months_cases, data.months_deaths])}
                 type="Bar"
-                options={emailsSubscriptionChart.options}
+                options={buildBarChartOptions([
+                  data.months_cases,
+                  data.months_deaths,
+                ])}
                 responsiveOptions={emailsSubscriptionChart.responsiveOptions}
                 listener={emailsSubscriptionChart.animation}
               />
             </CardHeader>
             <CardBody>
-              <h4 className={classes.cardTitle}>Análise Mensal</h4>
+              <h4 className={classes.cardTitle}>Análise Mensal: Novos Casos</h4>
               <p className={classes.cardCategory}>O Mês </p>
             </CardBody>
             <CardFooter chart>
@@ -282,7 +473,7 @@ export default function Dashboard() {
                   "Novos Casos",
                   "Novas Mortes",
                 ]}
-                tableData={[["SP", "0", "0", "0", "0"]]}
+                tableData={data.states}
               />
             </CardBody>
           </Card>
