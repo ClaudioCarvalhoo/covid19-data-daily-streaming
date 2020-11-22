@@ -1,43 +1,32 @@
-const WebSocket = require('ws');
-const rxjsWebSocket = require('rxjs/webSocket').webSocket;
-const filter = require('rxjs/operators').filter;
-const Subject = require('rxjs/Subject').Subject;
-const amqp = require('amqplib/callback_api');
-const states = require('./states');
+const WebSocket = require("ws");
+const rxjsWebSocket = require("rxjs/webSocket").webSocket;
+const { groupBy, mergeMap, bufferCount, map } = require("rxjs/operators");
+const amqp = require("amqplib/callback_api");
+const states = require("./states");
+const _ = require("lodash");
+const TinyQueue = require("tinyqueue");
 
-let dailyReports = {};
-let nextDay = new Date('2020-02-25');
+let nextDay = new Date("2020-02-25");
+let reportsHeap = new TinyQueue(
+  [],
+  (a, b) => new Date(a.date) - new Date(b.date)
+);
 
 const reportsWebSocketSubject = rxjsWebSocket({
-  url: 'ws://localhost:7474/reports',
+  url: "ws://localhost:7474/reports",
   WebSocketCtor: WebSocket,
 });
 
-let dailyReportsSubject = new Subject();
-dailyReportsSubject = dailyReportsSubject.pipe(
-  filter(
-    reportInDate =>
-      new Date(reportInDate.date).getTime() === nextDay.getTime() &&
-      Object.keys(reportInDate.report).length === states.length
-  )
+const grouped = reportsWebSocketSubject.pipe(
+  groupBy((report) => report.date),
+  mergeMap((report) => report.pipe(bufferCount(states.length))),
+  map((reports) => ({
+    date: reports[0].date,
+    reports: reports.map((report) => _.omit(report, "date")),
+  }))
 );
 
-reportsWebSocketSubject.subscribe(
-  report => {
-    dailyReports[report.date] = {
-      ...dailyReports[report.date],
-      [report.state]: { cases: report.cases, deaths: report.deaths },
-    };
-    dailyReportsSubject.next({
-      date: report.date,
-      report: dailyReports[report.date],
-    });
-  },
-  err => console.log(err),
-  () => console.log('Connection closed')
-);
-
-amqp.connect('amqp://localhost', (error0, connection) => {
+amqp.connect("amqp://localhost", (error0, connection) => {
   if (error0) {
     throw error0;
   }
@@ -46,23 +35,25 @@ amqp.connect('amqp://localhost', (error0, connection) => {
       throw error1;
     }
 
-    const queue = 'dailyReports';
+    const queue = "dailyReports";
     channel.assertQueue(queue, { durable: true });
 
-    dailyReportsSubject.subscribe(
-      reportInDate => {
-        nextDay.setDate(nextDay.getDate() + 1);
-        /*
-            Topic is going to get messy with duplicate messages from previous runs.
-            Find a way to ignore or update them using date as a key
-        */
-        channel.sendToQueue(
-          queue,
-          Buffer.from(JSON.stringify(reportInDate), { persistent: true })
-        );
+    grouped.subscribe(
+      (report) => {
+        reportsHeap.push(report);
+        while (
+          reportsHeap.peek() &&
+          new Date(reportsHeap.peek().date).getTime() === nextDay.getTime()
+        ) {
+          channel.sendToQueue(
+            queue,
+            Buffer.from(JSON.stringify(reportsHeap.pop()))
+          );
+          nextDay.setDate(nextDay.getDate() + 1);
+        }
       },
-      err => console.log(err),
-      () => console.log('Subject closed')
+      (err) => console.log(err),
+      () => console.log("Subject closed")
     );
   });
 });
