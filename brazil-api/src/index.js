@@ -1,7 +1,7 @@
-const http = require('http');
-const express = require('express');
-const csv = require('csv-parser');
-const fs = require('fs');
+const http = require("http");
+const express = require("express");
+const csv = require("csv-parser");
+const fs = require("fs");
 
 const brazilStates = {};
 
@@ -9,13 +9,13 @@ const startServer = () => {
   const app = express();
   app.use(express.json());
 
-  app.get('/states', (req, res) => {
-    res.setHeader('Content-Type', 'text/json');
+  app.get("/states", (req, res) => {
+    res.setHeader("Content-Type", "text/json");
     res.status(200).json(brazilStates);
   });
 
-  app.get('/state/:id/population', (req, res) => {
-    res.setHeader('Content-Type', 'text/json');
+  app.get("/state/:id/population", (req, res) => {
+    res.setHeader("Content-Type", "text/json");
     const state = brazilStates[req.params.id];
     if (state) {
       res.status(200).json(state.population);
@@ -25,14 +25,14 @@ const startServer = () => {
   });
 
   const server = http.createServer(app);
-  server.listen(3000);
+  server.listen(8080);
 
-  console.log('Server listening on port 3000');
+  console.log("Server listening on port 8080");
 };
 
-fs.createReadStream('./data/brazil_population_2019.csv')
-  .pipe(csv({ separator: ';' }))
-  .on('data', row => {
+fs.createReadStream("./data/brazil_population_2019.csv")
+  .pipe(csv({ separator: ";" }))
+  .on("data", (row) => {
     const population = brazilStates[row.state]
       ? parseInt(brazilStates[row.state].population)
       : 0;
@@ -41,4 +41,4 @@ fs.createReadStream('./data/brazil_population_2019.csv')
       population: population + parseInt(row.population),
     };
   })
-  .on('end', () => startServer());
+  .on("end", () => startServer());
