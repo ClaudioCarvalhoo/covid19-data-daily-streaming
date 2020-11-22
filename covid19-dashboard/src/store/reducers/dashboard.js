@@ -51,7 +51,7 @@ const initialState = {
 
 function build_rate_cases(data, current_rate_cases) {
   const newCases = data.reports.BR.newCases;
-  if (current_rate_cases == 0) {
+  if (current_rate_cases === 0) {
     return newCases;
   } else {
     return Math.floor((newCases / current_rate_cases) * 100);
@@ -60,7 +60,7 @@ function build_rate_cases(data, current_rate_cases) {
 
 function build_rate_deaths(data, current_rate_deaths) {
   const newDeaths = data.reports.BR.newDeaths;
-  if (current_rate_deaths == 0) {
+  if (current_rate_deaths === 0) {
     return newDeaths;
   } else {
     return Math.floor((newDeaths / current_rate_deaths) * 100);

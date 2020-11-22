@@ -15,19 +15,17 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import ReactDOM from "react-dom";
-import { createStore, applyMiddleware } from "redux";
-import { Provider, useDispatch } from "react-redux";
+import "assets/css/material-dashboard-react.css?v=1.9.0";
 import { createBrowserHistory } from "history";
-import { Router, Route, Switch, Redirect } from "react-router-dom";
-import rootReducer from "./store/reducers/index";
-import thunk from "redux-thunk";
-
 // core components
 import Admin from "layouts/Admin.js";
-import { fetchStreamData } from "./store/actions/index";
-import "assets/css/material-dashboard-react.css?v=1.9.0";
+import React from "react";
+import ReactDOM from "react-dom";
+import { Provider } from "react-redux";
+import { Redirect, Route, Router, Switch } from "react-router-dom";
+import { applyMiddleware, createStore } from "redux";
+import thunk from "redux-thunk";
+import rootReducer from "./store/reducers/index";
 
 const hist = createBrowserHistory();
 const store = createStore(rootReducer, applyMiddleware(thunk));

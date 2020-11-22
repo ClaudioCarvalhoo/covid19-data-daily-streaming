@@ -1,5 +1,4 @@
 import * as A from "./actionTypes";
-import * as actions from "./index";
 
 export const fetchStreamDataStart = () => {
   return {

@@ -1,94 +1,44 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-// react plugin for creating charts
-import ChartistGraph from "react-chartist";
+import { Icon, Typography } from "@material-ui/core";
 // @material-ui/core
 import { makeStyles } from "@material-ui/core/styles";
-import { Icon, Typography } from "@material-ui/core";
-// @material-ui/icons
-import Store from "@material-ui/icons/Store";
-import Warning from "@material-ui/icons/Warning";
-import CancelIcon from "@material-ui/icons/Cancel";
-import WarningIcon from "@material-ui/icons/Warning";
-import DateRange from "@material-ui/icons/DateRange";
-import LocalOffer from "@material-ui/icons/LocalOffer";
-import Update from "@material-ui/icons/Update";
-import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import AccessTime from "@material-ui/icons/AccessTime";
-import Accessibility from "@material-ui/icons/Accessibility";
-import BugReport from "@material-ui/icons/BugReport";
-import Code from "@material-ui/icons/Code";
-import Cloud from "@material-ui/icons/Cloud";
-// core components
-import GridItem from "components/Grid/GridItem.js";
-import GridContainer from "components/Grid/GridContainer.js";
-import Table from "components/Table/Table.js";
-import Tasks from "components/Tasks/Tasks.js";
-import CustomTabs from "components/CustomTabs/CustomTabs.js";
-import Danger from "components/Typography/Danger.js";
+import ArrowUpward from "@material-ui/icons/ArrowUpward";
+import { default as Warning } from "@material-ui/icons/Warning";
+import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
+import Chartist from "chartist";
 import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardIcon from "components/Card/CardIcon.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-
-import { bugs, website, server } from "variables/general.js";
-import Chartist from "chartist";
+import CardHeader from "components/Card/CardHeader.js";
+import CardIcon from "components/Card/CardIcon.js";
+import GridContainer from "components/Grid/GridContainer.js";
+// core components
+import GridItem from "components/Grid/GridItem.js";
+import Table from "components/Table/Table.js";
+import Danger from "components/Typography/Danger.js";
+import React, { useEffect } from "react";
+// react plugin for creating charts
+import ChartistGraph from "react-chartist";
+import { FaCross } from "react-icons/fa";
+import { RiVirusFill } from "react-icons/ri";
+import { useDispatch, useSelector } from "react-redux";
+import { dailySalesChart, emailsSubscriptionChart } from "variables/charts.js";
 import {
-  fetchStreamData,
   fetchStatePopulation,
+  fetchStreamData,
 } from "../../store/actions/index";
-
-import {
-  dailySalesChart,
-  emailsSubscriptionChart,
-  completedTasksChart,
-} from "variables/charts.js";
-
-import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
 
 const useStyles = makeStyles(styles);
 
-function monthNumberToString(monthNumber) {
-  switch (monthNumber) {
-    case "01":
-      return "Janeiro";
-    case "02":
-      return "Fevereiro";
-    case "03":
-      return "Março";
-    case "04":
-      return "Abril";
-    case "05":
-      return "Maio";
-    case "06":
-      return "Junho";
-    case "07":
-      return "Julho";
-    case "08":
-      return "Agosto";
-    case "09":
-      return "Setembro";
-    case "10":
-      return "Outubro";
-    case "11":
-      return "Novembro";
-    case "12":
-      return "Dezembro";
-    default:
-      return "";
-  }
-}
-
 function increaseText(increaseRate) {
   if (increaseRate >= 50) {
-    return `Aumentando rapidamente. ${increaseRate}% more`;
+    return `Aumentando rapidamente. Aumento de ${increaseRate}%.`;
   }
   if (increaseRate < 50 && increaseRate >= 30) {
-    return `Aumentando moderadamente. ${increaseRate}% more`;
+    return `Aumentando moderadamente. Aumento de ${increaseRate}%.`;
   }
   if (increaseRate < 30 && increaseRate > 0) {
-    return `Aumentando levemente. ${increaseRate}% more`;
+    return `Aumentando levemente. Aumento de ${increaseRate}%.`;
   } else {
     return `Estável`;
   }
@@ -200,7 +150,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="danger" stats icon>
               <CardIcon color="danger">
-                <CancelIcon />
+                <FaCross />
               </CardIcon>
               <p className={classes.cardCategory}>Mortes Confirmadas</p>
               <h3 className={classes.cardTitle}>
@@ -223,7 +173,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="warning" stats icon>
               <CardIcon color="warning">
-                <WarningIcon />
+                <RiVirusFill />
               </CardIcon>
               <p className={classes.cardCategory}>Casos Confirmados</p>
               <h3 className={classes.cardTitle}>
@@ -414,47 +364,6 @@ export default function Dashboard() {
       </GridContainer>
 
       <GridContainer>
-        <GridItem xs={12} sm={12} md={6}>
-          <CustomTabs
-            title="Tasks:"
-            headerColor="primary"
-            tabs={[
-              {
-                tabName: "Bugs",
-                tabIcon: BugReport,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[0, 3]}
-                    tasksIndexes={[0, 1, 2, 3]}
-                    tasks={bugs}
-                  />
-                ),
-              },
-              {
-                tabName: "Website",
-                tabIcon: Code,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[0]}
-                    tasksIndexes={[0, 1]}
-                    tasks={website}
-                  />
-                ),
-              },
-              {
-                tabName: "Server",
-                tabIcon: Cloud,
-                tabContent: (
-                  <Tasks
-                    checkedIndexes={[1]}
-                    tasksIndexes={[0, 1, 2]}
-                    tasks={server}
-                  />
-                ),
-              },
-            ]}
-          />
-        </GridItem>
         <GridItem xs={12} sm={12} md={6}>
           <Card>
             <CardHeader color="warning">
