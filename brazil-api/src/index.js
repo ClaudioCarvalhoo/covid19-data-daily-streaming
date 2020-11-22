@@ -9,13 +9,18 @@ const startServer = () => {
   const app = express();
   app.use(express.json());
 
-  app.get('/states', (req, res) => {
+  const setHeaders = res => {
     res.setHeader('Content-Type', 'text/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  };
+
+  app.get('/states', (req, res) => {
+    setHeaders(res);
     res.status(200).json(brazilStates);
   });
 
   app.get('/state/:id/population', (req, res) => {
-    res.setHeader('Content-Type', 'text/json');
+    setHeaders(res);
     const state = brazilStates[req.params.id];
     if (state) {
       res.status(200).json(state.population);
