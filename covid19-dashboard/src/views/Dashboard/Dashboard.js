@@ -262,31 +262,7 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={12} md={6}>
-          <Card chart>
-            <CardHeader color='success'>
-              <ChartistGraph
-                className='ct-chart'
-                data={buildChart(data.lastSevenDays_cases)}
-                type='Line'
-                options={buildChartOptions(data.lastSevenDays_cases)}
-                listener={dailySalesChart.animation}
-              />
-            </CardHeader>
-            <CardBody>
-              <h4 className={classes.cardTitle}>
-                Análise Semanal: Casos Absolutos
-              </h4>
-            </CardBody>
-            <CardFooter chart>
-              <div className={classes.stats}>
-                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
-              </div>
-            </CardFooter>
-          </Card>
-        </GridItem>
-      </GridContainer>
-      <GridContainer>
+
         <GridItem xs={12} sm={12} md={6}>
           <Card chart>
             <CardHeader color='success'>
@@ -310,6 +286,33 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
+      </GridContainer>
+
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color='success'>
+              <ChartistGraph
+                className='ct-chart'
+                data={buildChart(data.lastSevenDays_cases)}
+                type='Line'
+                options={buildChartOptions(data.lastSevenDays_cases)}
+                listener={dailySalesChart.animation}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Casos Absolutos
+              </h4>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+
         <GridItem xs={12} sm={12} md={6}>
           <Card chart>
             <CardHeader color='success'>
