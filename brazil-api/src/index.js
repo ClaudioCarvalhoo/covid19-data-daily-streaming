@@ -49,6 +49,22 @@ const startServer = () => {
     res.status(200).json(dailyReports);
   });
 
+  app.get('/months-report', (_, res) => {
+    const monthsCases = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const monthsDeaths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    for (const i in dailyReports) {
+      const monthIndex = dailyReports[i].date.split('-')[1] - 1;
+      const brazilReport = dailyReports[i].reports.BR;
+
+      monthsCases[monthIndex] += brazilReport.cases;
+      monthsDeaths[monthIndex] += brazilReport.deaths;
+    }
+
+    setHeaders(res);
+    res.send({ report: { monthsCases, monthsDeaths } });
+  });
+
   app.post('/daily-report', (req, res) => {
     const dailyReport = req.body;
     dailyReports.push(dailyReport);
