@@ -23,6 +23,7 @@ const brazilStates = {};
 const startServer = () => {
   const app = express();
   app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
   const setHeaders = res => {
     res.setHeader('Content-Type', 'text/json');
@@ -49,20 +50,35 @@ const startServer = () => {
     res.status(200).json(dailyReports);
   });
 
-  app.get('/months-report', (_, res) => {
+  const firstDateTime = new Date('2020-02-25').getTime();
+  app.get('/months-report', (req, res) => {
+    if (!req.query.date) {
+      res.status(400).send('Bad Request: missing date query');
+    }
+
+    const reqDateTime = new Date(req.query.date).getTime();
+    const differenceInTime = reqDateTime - firstDateTime;
+    const daySinceStarted = differenceInTime / (1000 * 3600 * 24);
+
     const monthsCases = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const monthsDeaths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     for (const i in dailyReports) {
-      const monthIndex = dailyReports[i].date.split('-')[1] - 1;
-      const brazilReport = dailyReports[i].reports.BR;
+      const curDateTime = new Date(dailyReports[i].date).getTime();
+      if (curDateTime <= reqDateTime) {
+        const monthIndex = dailyReports[i].date.split('-')[1] - 1;
+        const brazilReport = dailyReports[i].reports.BR;
 
-      monthsCases[monthIndex] += brazilReport.cases;
-      monthsDeaths[monthIndex] += brazilReport.deaths;
+        monthsCases[monthIndex] += brazilReport.cases;
+        monthsDeaths[monthIndex] += brazilReport.deaths;
+      }
     }
 
     setHeaders(res);
-    res.send({ report: { monthsCases, monthsDeaths } });
+    res.send({
+      daySinceStarted: daySinceStarted,
+      report: { monthsCases, monthsDeaths },
+    });
   });
 
   app.post('/daily-report', (req, res) => {
