@@ -9,10 +9,11 @@ import Sidebar from "components/Sidebar/Sidebar.js";
 // creates a beautiful scrollbar
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Redirect, Route, Switch } from "react-router-dom";
 import routes from "routes.js";
-
+import { fetchStatePopulation, fetchStreamData } from "../store/actions/index";
 let ps;
 
 const switchRoutes = (
@@ -36,6 +37,7 @@ const switchRoutes = (
 const useStyles = makeStyles(styles);
 
 export default function Admin({ ...rest }) {
+  const dispatch = useDispatch();
   // styles
   const classes = useStyles();
   // ref to help us initialize PerfectScrollbar on windows devices
@@ -73,6 +75,11 @@ export default function Admin({ ...rest }) {
       window.removeEventListener("resize", resizeFunction);
     };
   }, [mainPanel]);
+
+  useEffect(() => {
+    dispatch(fetchStreamData());
+  }, [dispatch]);
+
   return (
     <div className={classes.wrapper}>
       <Sidebar

@@ -1,5 +1,17 @@
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  Typography,
+  AccordionDetails,
+} from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
@@ -7,10 +19,11 @@ import CardHeader from "components/Card/CardHeader.js";
 import GridContainer from "components/Grid/GridContainer.js";
 // core components
 import GridItem from "components/Grid/GridItem.js";
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import interpolate from "color-interpolate";
+import ReactTooltip from "react-tooltip";
 
 const styles = {
   cardCategoryWhite: {
@@ -37,18 +50,50 @@ export default function UserProfile() {
   const classes = useStyles();
   const geoUrl =
     "https://gist.githubusercontent.com/ruliana/1ccaaab05ea113b0dff3b22be3b4d637/raw/196c0332d38cb935cfca227d28f7cecfa70b412e/br-states.json";
+
+  const [content, setContent] = useState("");
+  const [selectedOption, setSelectedOption] = useState("casos");
+  const [expanded, setExpanded] = React.useState(false);
+
   const data = useSelector((state) => state.dashboard);
+  const states = data.states.map((state) => {
+    return state[0];
+  });
+  console.log(states);
+  console.log(data);
   let colormap = interpolate([
-    "#393A3C",
-    "#5D5F5C",
-    "#F07249",
-    "#D22C2C",
-    "#6E1B09",
+    "#FED3C4",
+    "#FEACA3",
+    "#FE9388",
+    "#A80100",
+    "#530103",
   ]);
+
   function makeFillForState(state_acro) {
     let n = 10;
-    return colormap(n / 1200000);
+
+    if (selectedOption === "casos") {
+      n = data.data.reports ? data.data.reports[state_acro].cases : 10;
+      return colormap(n / 1000000);
+    }
+    if (selectedOption === "mortes") {
+      n = data.data.reports ? data.data.reports[state_acro].deaths : 10;
+      return colormap(n / 100000);
+    }
+
+    return colormap(n / 1000000);
   }
+
+  function makeContentForState(state_acro) {
+    let name = state_acro;
+    let cases = data.data.reports ? data.data.reports[state_acro].cases : "";
+    let deaths = data.data.reports ? data.data.reports[state_acro].deaths : "";
+    setContent(`${name}\nCases: ${cases}\nDeaths: ${deaths}`);
+  }
+
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
 
   return (
     <div>
@@ -62,7 +107,21 @@ export default function UserProfile() {
               </p>
             </CardHeader>
             <CardBody>
+              <FormControl variant="outlined" className={classes.formControl}>
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={selectedOption}
+                  onChange={(event) => {
+                    setSelectedOption(event.target.value);
+                  }}
+                  label="Tipo"
+                >
+                  <MenuItem value={"casos"}>Casos</MenuItem>
+                  <MenuItem value={"mortes"}>Mortes</MenuItem>
+                </Select>
+              </FormControl>
               <ComposableMap
+                data-tip=""
                 projection="geoMercator"
                 projectionConfig={{
                   rotate: [54.0, 14.0, 0],
@@ -77,6 +136,15 @@ export default function UserProfile() {
                           key={geo.rsmKey}
                           geography={geo}
                           fill={makeFillForState(geo.id)}
+                          onMouseEnter={() => {
+                            makeContentForState(geo.id);
+                          }}
+                          onMouseLeave={() => {
+                            setContent("");
+                          }}
+                          style={{
+                            hover: { fill: "#F53", outline: "#333 4px" },
+                          }}
                         />
                       );
                     })
@@ -84,7 +152,9 @@ export default function UserProfile() {
                 </Geographies>
               </ComposableMap>
             </CardBody>
-            <CardFooter></CardFooter>
+            <CardFooter>
+              <ReactTooltip>{content}</ReactTooltip>
+            </CardFooter>
           </Card>
         </GridItem>
       </GridContainer>
