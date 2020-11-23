@@ -52,11 +52,17 @@ const startServer = () => {
 
   const firstDateTime = new Date('2020-02-25').getTime();
   app.get('/months-report', (req, res) => {
+    let reqDate = req.query.date;
     if (!req.query.date) {
-      res.status(400).send('Bad Request: missing date query');
+      reqDate = new Date('2020-02-25');
+      for (const i in dailyReports) {
+        const curDateTime = new Date(dailyReports[i].date);
+        reqDate =
+          reqDate.getTime() < curDateTime.getTime() ? curDateTime : reqDate;
+      }
     }
 
-    const reqDateTime = new Date(req.query.date).getTime();
+    const reqDateTime = new Date(reqDate).getTime();
     const differenceInTime = reqDateTime - firstDateTime;
     const daySinceStarted = differenceInTime / (1000 * 3600 * 24);
 
@@ -75,7 +81,7 @@ const startServer = () => {
     }
 
     setHeaders(res);
-    res.send({
+    res.status(200).json({
       daySinceStarted: daySinceStarted,
       report: { monthsCases, monthsDeaths },
     });

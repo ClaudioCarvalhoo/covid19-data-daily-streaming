@@ -101,43 +101,27 @@ export default function Dashboard() {
     };
   }
 
-  function buildBarChartOptions(chartData, useLow = false) {
-    const high =
-      Math.max(
-        chartData[0].reduce(function (a, b) {
-          return Math.max(a, b);
-        }),
-        chartData[1].reduce(function (a, b) {
-          return Math.max(a, b);
-        })
-      ) + 200;
+  function buildBarChartOptions(chartData) {
+    let high = chartData[0].reduce(function (a, b) {
+      return Math.max(a, b);
+    });
 
-    const low =
-      Math.min(
-        chartData[0].reduce(function (a, b) {
-          return Math.min(a, b);
-        }),
+    if (chartData[1]) {
+      Math.max(
+        high,
         chartData[1].reduce(function (a, b) {
-          return Math.min(a, b);
+          return Math.max(a, b);
         })
-      ) -
-        100 >=
-      0
-        ? Math.min(
-            chartData[0].reduce(function (a, b) {
-              return Math.min(a, b);
-            }),
-            chartData[1].reduce(function (a, b) {
-              return Math.min(a, b);
-            })
-          ) - 100
-        : 0;
+      );
+    }
+
+    high += 100;
 
     return {
       lineSmooth: Chartist.Interpolation.cardinal({
         tension: 0,
       }),
-      low: useLow ? low : 0,
+      low: 0,
       high: high,
       chartPadding: {
         top: 0,
@@ -187,7 +171,7 @@ export default function Dashboard() {
   return (
     <div>
       <GridContainer>
-        <GridItem xs={12} sm={6} md={3}>
+        <GridItem xs={12} sm={6} md={4}>
           <Card>
             <CardHeader color="danger" stats icon>
               <CardIcon color="danger">
@@ -210,7 +194,7 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={6} md={3}>
+        <GridItem xs={12} sm={6} md={4}>
           <Card>
             <CardHeader color="warning" stats icon>
               <CardIcon color="warning">
@@ -233,7 +217,7 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={6} md={3}>
+        <GridItem xs={12} sm={6} md={4}>
           <Card>
             <CardHeader color="primary" stats icon>
               <CardIcon color="primary">
@@ -279,31 +263,7 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={12} md={6}>
-          <Card chart>
-            <CardHeader color="success">
-              <ChartistGraph
-                className="ct-chart"
-                data={buildChart(data.lastSevenDays_cases)}
-                type="Line"
-                options={buildChartOptions(data.lastSevenDays_cases)}
-                listener={dailySalesChart.animation}
-              />
-            </CardHeader>
-            <CardBody>
-              <h4 className={classes.cardTitle}>
-                Análise Semanal: Casos Absolutos
-              </h4>
-            </CardBody>
-            <CardFooter chart>
-              <div className={classes.stats}>
-                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
-              </div>
-            </CardFooter>
-          </Card>
-        </GridItem>
-      </GridContainer>
-      <GridContainer>
+
         <GridItem xs={12} sm={12} md={6}>
           <Card chart>
             <CardHeader color="success">
@@ -327,6 +287,33 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
         </GridItem>
+      </GridContainer>
+
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color="success">
+              <ChartistGraph
+                className="ct-chart"
+                data={buildChart(data.lastSevenDays_cases)}
+                type="Line"
+                options={buildChartOptions(data.lastSevenDays_cases)}
+                listener={dailySalesChart.animation}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>
+                Análise Semanal: Casos Absolutos
+              </h4>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+
         <GridItem xs={12} sm={12} md={6}>
           <Card chart>
             <CardHeader color="success">
@@ -351,18 +338,16 @@ export default function Dashboard() {
           </Card>
         </GridItem>
       </GridContainer>
+
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
           <Card chart>
-            <CardHeader color="warning">
+            <CardHeader color="success">
               <ChartistGraph
                 className="ct-chart"
-                data={buildBarChart([data.months_cases, data.months_deaths])}
+                data={buildBarChart([data.months_cases])}
                 type="Bar"
-                options={buildBarChartOptions([
-                  data.months_cases,
-                  data.months_deaths,
-                ])}
+                options={buildBarChartOptions([data.months_cases, ,])}
                 responsiveOptions={emailsSubscriptionChart.responsiveOptions}
                 listener={emailsSubscriptionChart.animation}
               />
@@ -383,7 +368,37 @@ export default function Dashboard() {
       </GridContainer>
 
       <GridContainer>
-        <GridItem xs={12} sm={12} md={6}>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card chart>
+            <CardHeader color="success">
+              <ChartistGraph
+                className="ct-chart"
+                data={buildBarChart([data.months_deaths])}
+                type="Bar"
+                options={buildBarChartOptions([data.months_deaths])}
+                responsiveOptions={emailsSubscriptionChart.responsiveOptions}
+                listener={emailsSubscriptionChart.animation}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>
+                Análise Mensal: Novas mortes
+              </h4>
+              <p className={classes.cardCategory}>
+                Mês atual: {monthNumberToString(data.currentMonth)}{" "}
+              </p>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+      </GridContainer>
+
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
           <Card>
             <CardHeader color="warning">
               <h4 className={classes.cardTitleWhite}>Estado a estado</h4>
