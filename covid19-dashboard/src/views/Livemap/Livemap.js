@@ -53,13 +53,11 @@ export default function Livemap() {
 
   const [content, setContent] = useState("");
   const [selectedOption, setSelectedOption] = useState("casos");
-  const [expanded, setExpanded] = React.useState(false);
 
   const data = useSelector((state) => state.dashboard);
-  const states = data.states.map((state) => {
-    return state[0];
-  });
-  console.log(states);
+
+  console.log(data.statePopulation);
+
   console.log(data);
   let colormap = interpolate([
     "#FED3C4",
@@ -81,6 +79,31 @@ export default function Livemap() {
       return colormap(n / 100000);
     }
 
+    if (selectedOption === "casos-proporcional") {
+      n =
+        data.data.reports && data.statePopulation[state_acro]
+          ? data.data.reports[state_acro].cases /
+            data.statePopulation[state_acro].population
+          : 0;
+      return colormap(n * 10);
+    }
+
+    if (selectedOption === "mortes-por-caso") {
+      n = data.data.reports
+        ? data.data.reports[state_acro].deaths /
+          data.data.reports[state_acro].cases
+        : 0;
+      return colormap(n * 7);
+    }
+
+    if (selectedOption === "mortes-proporcional") {
+      n =
+        data.data.reports && data.statePopulation[state_acro]
+          ? data.data.reports[state_acro].deaths /
+            data.statePopulation[state_acro].population
+          : 0;
+      return colormap(n * 500);
+    }
     return colormap(n / 1000000);
   }
 
@@ -88,12 +111,13 @@ export default function Livemap() {
     let name = state_acro;
     let cases = data.data.reports ? data.data.reports[state_acro].cases : "";
     let deaths = data.data.reports ? data.data.reports[state_acro].deaths : "";
-    setContent(`${name}\nCases: ${cases}\nDeaths: ${deaths}`);
+    let pop = data.statePopulation[state_acro]
+      ? data.statePopulation[state_acro].population
+      : "";
+    setContent(
+      `${name}\n Cases: ${cases}\n Deaths: ${deaths} Population: ${pop}`
+    );
   }
-
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-  };
 
   return (
     <div>
@@ -118,6 +142,13 @@ export default function Livemap() {
                 >
                   <MenuItem value={"casos"}>Casos</MenuItem>
                   <MenuItem value={"mortes"}>Mortes</MenuItem>
+                  <MenuItem value={"casos-proporcional"}>
+                    Casos Proporcional
+                  </MenuItem>
+                  <MenuItem value={"mortes-proporcional"}>
+                    Mortes Proporcional
+                  </MenuItem>
+                  <MenuItem value="mortes-por-caso">Mortes por Caso</MenuItem>
                 </Select>
               </FormControl>
               <ComposableMap

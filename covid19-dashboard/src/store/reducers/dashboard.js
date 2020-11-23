@@ -355,6 +355,7 @@ const reducer = (state = initialState, action) => {
     case A.FETCH_RETROATIVE_DATA_START:
       return { ...state, retroativeLoading: true };
     case A.FETCH_RETROATIVE_DATA_SUCCESS:
+      console.log(action.retroativeData);
       return {
         ...state,
         retroativeLoading: false,
@@ -370,6 +371,7 @@ const reducer = (state = initialState, action) => {
         ),
       };
     case A.FETCH_RETROATIVE_DATA_FAIL:
+      console.log("fail");
       return state;
     default:
       return state;

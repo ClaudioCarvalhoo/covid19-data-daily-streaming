@@ -78,6 +78,7 @@ export default function Admin({ ...rest }) {
 
   useEffect(() => {
     dispatch(fetchStreamData());
+    dispatch(fetchStatePopulation());
   }, [dispatch]);
 
   return (

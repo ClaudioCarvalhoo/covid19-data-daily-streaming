@@ -22,7 +22,7 @@ export const fetchStatePopulationStart = () => {
 export const fetchStatePopulationSuccess = (data) => {
   return {
     type: A.FETCH_STATE_POPULATION_SUCCESS,
-    statePopulaion: data,
+    statePopulation: data,
   };
 };
 
@@ -33,6 +33,7 @@ export const fetchRetroativeDataStart = () => {
 };
 
 export const fetchRetroativeDataSuccess = (response) => {
+  console.log(response);
   return {
     type: A.FETCH_RETROATIVE_DATA_SUCCESS,
     retroativeData: response,
@@ -72,8 +73,10 @@ export const fetchStatePopulation = () => {
     dispatch(fetchStatePopulationStart());
     fetch("http://localhost:8080/states")
       .then((response) => {
-        console.log(response);
-        dispatch(fetchStatePopulationSuccess(response));
+        response.json().then((res) => {
+          console.log(res);
+          dispatch(fetchStatePopulationSuccess(res));
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -90,11 +93,13 @@ export const fetchRetroativeData = (date) => {
     });
     fetch(url)
       .then((response) => {
-        console.log(response);
-        dispatch(fetchRetroativeDataSuccess(response));
+        response.json().then((res) => {
+          dispatch(fetchRetroativeDataSuccess(res));
+        });
       })
       .catch((err) => {
         console.log(err);
+        dispatch(fetchRetroativeDataFail());
       });
   };
 };
