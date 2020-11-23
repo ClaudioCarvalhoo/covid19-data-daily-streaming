@@ -6,8 +6,8 @@ const states = require('./states');
 const _ = require('lodash');
 const TinyQueue = require('tinyqueue');
 
-const DATA_STREAMER_ADDR = process.env.DATA_STREAMER_ADDR
-  ? process.env.DATA_STREAMER_ADDR
+const STREAMER_ADDR = process.env.STREAMER_ADDR
+  ? process.env.STREAMER_ADDR
   : 'localhost';
 
 const RABBITMQ_SERVER_ADDR = process.env.RABBITMQ_SERVER_ADDR
@@ -21,7 +21,7 @@ let reportsHeap = new TinyQueue(
 );
 
 const reportsWebSocketSubject = rxjsWebSocket({
-  url: `ws://${DATA_STREAMER_ADDR}:7474/reports`,
+  url: `ws://${STREAMER_ADDR}:7474/reports`,
   WebSocketCtor: WebSocket,
 });
 

@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  data-streamer:
+  streamer:
     build:
       context: ./dataStreamer
     ports:
@@ -8,31 +8,31 @@ services:
     restart: always
     networks:
       - default
-  daily-aggregator:
+  aggregator:
     build:
       context: ./dailyAggregator
     links:
-      - data-streamer
+      - streamer
     environment:
-      - DATA_STREAMER_ADDR=data-streamer
+      - STREAMER_ADDR=streamer
       - RABBITMQ_SERVER_ADDR=host.docker.internal
     restart: always
     networks:
       - default
-  data-processing-service:
+  processor:
     build:
       context: ./dataProcessingService
     environment:
       - RABBITMQ_SERVER_ADDR=host.docker.internal
-      - BRAZIL_API_ADDR=brazil-api
+      - BRAZIL_API_ADDR=brazil_api
     links:
-      - brazil-api
+      - brazil_api
     ports:
       - 9090:9090
     restart: always
     networks:
       - default
-  brazil-api:
+  brazil_api:
     build:
       context: ./brazil-api
     ports:
