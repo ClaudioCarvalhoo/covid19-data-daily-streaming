@@ -45,16 +45,18 @@ const initialState = {
     ["SE", "0", "0", "0", "0"],
     ["TO", "0", "0", "0", "0"],
   ],
-  timeLastUpdated: 0,
+  timeLastUpdated: "Nunca",
   data: {},
 };
 
 function build_rate_cases(data, current_rate_cases) {
   const newCases = data.reports.BR.newCases;
   if (current_rate_cases === 0) {
-    return newCases;
+    return newCases * 100;
   } else {
-    return Math.floor((newCases / current_rate_cases) * 100);
+    return Math.floor(
+      ((newCases - current_rate_cases) / current_rate_cases) * 100
+    );
   }
 }
 
@@ -63,7 +65,9 @@ function build_rate_deaths(data, current_rate_deaths) {
   if (current_rate_deaths === 0) {
     return newDeaths;
   } else {
-    return Math.floor((newDeaths / current_rate_deaths) * 100);
+    return (
+      Math.floor((newDeaths - current_rate_deaths) / current_rate_deaths) * 100
+    );
   }
 }
 

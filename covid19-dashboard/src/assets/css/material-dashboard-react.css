@@ -523,10 +523,18 @@ footer ul li a:hover {
   stroke: #e73e3a;
 }
 
-.makeStyles-successCardHeader-85:not(.makeStyles-cardHeaderIcon-83) {
+.makeStyles-successCardHeader[class*="-"]:not(.makeStyles-cardHeaderIcon[class*="-"]) {
   background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
 }
 
 .makeStyles-warningCardHeader-84:not(.makeStyles-cardHeaderIcon-83) {
+  background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
+}
+
+.makeStyles-successCardHeader-80:not(.makeStyles-cardHeaderIcon-78) {
+  background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
+}
+
+.makeStyles-successCardHeader-85:not(.makeStyles-cardHeaderIcon-83) {
   background: linear-gradient(60deg, #3f3e8d, #0d1b9c) !important;
 }

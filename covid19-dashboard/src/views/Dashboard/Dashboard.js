@@ -16,17 +16,13 @@ import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Table from "components/Table/Table.js";
 import Danger from "components/Typography/Danger.js";
-import React, { useEffect } from "react";
+import React from "react";
 // react plugin for creating charts
 import ChartistGraph from "react-chartist";
 import { FaCross } from "react-icons/fa";
 import { RiVirusFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { dailySalesChart, emailsSubscriptionChart } from "variables/charts.js";
-import {
-  fetchStatePopulation,
-  fetchStreamData,
-} from "../../store/actions/index";
 
 const useStyles = makeStyles(styles);
 
@@ -46,15 +42,9 @@ function increaseText(increaseRate) {
 
 export default function Dashboard() {
   const classes = useStyles();
-  const dispatch = useDispatch();
 
   const data = useSelector((state) => state.dashboard);
   console.log(data);
-
-  useEffect(() => {
-    dispatch(fetchStreamData());
-    dispatch(fetchStatePopulation());
-  }, [dispatch]);
 
   function buildChart(chartData) {
     return {
@@ -142,7 +132,36 @@ export default function Dashboard() {
       },
     };
   }
-
+  function monthNumberToString(monthNumber) {
+    switch (monthNumber) {
+      case "01":
+        return "Janeiro";
+      case "02":
+        return "Fevereiro";
+      case "03":
+        return "Março";
+      case "04":
+        return "Abril";
+      case "05":
+        return "Maio";
+      case "06":
+        return "Junho";
+      case "07":
+        return "Julho";
+      case "08":
+        return "Agosto";
+      case "09":
+        return "Setembro";
+      case "10":
+        return "Outubro";
+      case "11":
+        return "Novembro";
+      case "12":
+        return "Dezembro";
+      default:
+        return "";
+    }
+  }
   return (
     <div>
       <GridContainer>
@@ -230,16 +249,10 @@ export default function Dashboard() {
               <h4 className={classes.cardTitle}>
                 Análise Semanal: Novos Casos
               </h4>
-              <p className={classes.cardCategory}>
-                <span className={classes.successText}>
-                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
-                </span>{" "}
-                de aumento desde a semana anterior.
-              </p>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <AccessTime /> Atualizado em {data.timeLastUpdated.toString()}
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
               </div>
             </CardFooter>
           </Card>
@@ -259,16 +272,10 @@ export default function Dashboard() {
               <h4 className={classes.cardTitle}>
                 Análise Semanal: Casos Absolutos
               </h4>
-              <p className={classes.cardCategory}>
-                <span className={classes.successText}>
-                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
-                </span>{" "}
-                de aumento desde a semana anterior.
-              </p>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <AccessTime /> Atualizado
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
               </div>
             </CardFooter>
           </Card>
@@ -290,16 +297,10 @@ export default function Dashboard() {
               <h4 className={classes.cardTitle}>
                 Análise Semanal: Novas Mortes
               </h4>
-              <p className={classes.cardCategory}>
-                <span className={classes.successText}>
-                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
-                </span>{" "}
-                de aumento desde a semana anterior.
-              </p>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <AccessTime /> Atualizado em {data.timeLastUpdated.toString()}
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
               </div>
             </CardFooter>
           </Card>
@@ -319,16 +320,10 @@ export default function Dashboard() {
               <h4 className={classes.cardTitle}>
                 Análise Semanal: Mortes Absolutas
               </h4>
-              <p className={classes.cardCategory}>
-                <span className={classes.successText}>
-                  <ArrowUpward className={classes.upArrowCardCategory} /> 55%
-                </span>{" "}
-                de aumento desde a semana anterior.
-              </p>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <AccessTime /> Atualizado
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
               </div>
             </CardFooter>
           </Card>
@@ -352,11 +347,13 @@ export default function Dashboard() {
             </CardHeader>
             <CardBody>
               <h4 className={classes.cardTitle}>Análise Mensal: Novos Casos</h4>
-              <p className={classes.cardCategory}>O Mês </p>
+              <p className={classes.cardCategory}>
+                Mês atual: {monthNumberToString(data.currentMonth)}{" "}
+              </p>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <AccessTime /> atualizado
+                <AccessTime /> Atualizado: {data.timeLastUpdated.toString()}
               </div>
             </CardFooter>
           </Card>
