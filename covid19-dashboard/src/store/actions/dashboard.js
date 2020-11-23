@@ -26,14 +26,39 @@ export const fetchStatePopulationSuccess = (data) => {
   };
 };
 
+export const fetchRetroativeDataStart = () => {
+  return {
+    type: A.FETCH_RETROATIVE_DATA_START,
+  };
+};
+
+export const fetchRetroativeDataSuccess = (response) => {
+  return {
+    type: A.FETCH_RETROATIVE_DATA_SUCCESS,
+    retroativeData: response,
+  };
+};
+
+export const fetchRetroativeDataFail = () => {
+  return {
+    type: A.FETCH_RETROATIVE_DATA_FAIL,
+  };
+};
+
+let oneTime = false;
 export const fetchStreamData = () => {
   return (dispatch) => {
     dispatch(fetchStreamDataStart());
     const source = new EventSource("http://localhost:9090");
     console.log("listening");
     source.onmessage = (event) => {
-      console.log(JSON.parse(event.data));
-      dispatch(streamDataArrived(JSON.parse(event.data)));
+      let data = JSON.parse(event.data);
+      console.log(data);
+      dispatch(streamDataArrived(data));
+      if (!oneTime) {
+        dispatch(fetchRetroativeData(data.date));
+        oneTime = true;
+      }
     };
 
     source.onerror = () => {
@@ -49,6 +74,24 @@ export const fetchStatePopulation = () => {
       .then((response) => {
         console.log(response);
         dispatch(fetchStatePopulationSuccess(response));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+};
+
+export const fetchRetroativeData = (date) => {
+  return (dispatch) => {
+    dispatch(fetchRetroativeDataStart());
+    let url = new URL("http://localhost:8080/months-report");
+    url.search = new URLSearchParams({
+      date: date,
+    });
+    fetch(url)
+      .then((response) => {
+        console.log(response);
+        dispatch(fetchRetroativeDataSuccess(response));
       })
       .catch((err) => {
         console.log(err);

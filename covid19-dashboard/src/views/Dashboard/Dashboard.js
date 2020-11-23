@@ -6,23 +6,24 @@ import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import { default as Warning } from "@material-ui/icons/Warning";
 import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
 import Chartist from "chartist";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardFooter from "components/Card/CardFooter.js";
-import CardHeader from "components/Card/CardHeader.js";
+import Card from "../../components/Card/Card";
+import CardBody from "../../components/Card/CardBody";
+import CardFooter from "../../components/Card/CardFooter";
+import CardHeader from "../../components/Card/CardHeader";
 import CardIcon from "components/Card/CardIcon.js";
-import GridContainer from "components/Grid/GridContainer.js";
+import GridContainer from "../../components/Grid/GridContainer";
 // core components
-import GridItem from "components/Grid/GridItem.js";
+import GridItem from "../../components/Grid/GridItem";
 import Table from "components/Table/Table.js";
 import Danger from "components/Typography/Danger.js";
-import React from "react";
+import React, { useEffect } from "react";
 // react plugin for creating charts
 import ChartistGraph from "react-chartist";
 import { FaCross } from "react-icons/fa";
 import { RiVirusFill } from "react-icons/ri";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { dailySalesChart, emailsSubscriptionChart } from "variables/charts.js";
+import { fetchRetroativeData } from "../../store/actions/index";
 
 const useStyles = makeStyles(styles);
 
@@ -42,7 +43,7 @@ function increaseText(increaseRate) {
 
 export default function Dashboard() {
   const classes = useStyles();
-
+  const dispatch = useDispatch();
   const data = useSelector((state) => state.dashboard);
   console.log(data);
 
@@ -100,7 +101,7 @@ export default function Dashboard() {
     };
   }
 
-  function buildBarChartOptions(chartData) {
+  function buildBarChartOptions(chartData, useLow = false) {
     const high =
       Math.max(
         chartData[0].reduce(function (a, b) {
@@ -109,13 +110,34 @@ export default function Dashboard() {
         chartData[1].reduce(function (a, b) {
           return Math.max(a, b);
         })
-      ) + 100;
+      ) + 200;
+
+    const low =
+      Math.min(
+        chartData[0].reduce(function (a, b) {
+          return Math.min(a, b);
+        }),
+        chartData[1].reduce(function (a, b) {
+          return Math.min(a, b);
+        })
+      ) -
+        100 >=
+      0
+        ? Math.min(
+            chartData[0].reduce(function (a, b) {
+              return Math.min(a, b);
+            }),
+            chartData[1].reduce(function (a, b) {
+              return Math.min(a, b);
+            })
+          ) - 100
+        : 0;
 
     return {
       lineSmooth: Chartist.Interpolation.cardinal({
         tension: 0,
       }),
-      low: 0,
+      low: useLow ? low : 0,
       high: high,
       chartPadding: {
         top: 0,

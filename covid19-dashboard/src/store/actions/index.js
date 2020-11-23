@@ -1,1 +1,5 @@
-export { fetchStreamData, fetchStatePopulation } from "./dashboard";
+export {
+  fetchStreamData,
+  fetchStatePopulation,
+  fetchRetroativeData,
+} from "./dashboard";

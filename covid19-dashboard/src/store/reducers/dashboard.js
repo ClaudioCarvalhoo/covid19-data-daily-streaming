@@ -2,6 +2,7 @@ import * as A from "../actions/actionTypes";
 
 const initialState = {
   statePopulationLoading: false,
+  retroativeLoading: false,
   statePopulation: {},
   connectionAlive: false,
   currentMonth: "",
@@ -119,6 +120,13 @@ function build_month_deaths(data, current_month_deaths) {
   const month = data.date.split("-")[1];
   current_month_deaths[parseInt(month) - 1] += data.reports.BR.newDeaths;
   return current_month_deaths;
+}
+
+function merge_month(retroativeData_month_cases, current_month_cases) {
+  for (let i = 0; i < 12; i++) {
+    current_month_cases[i] += retroativeData_month_cases[i];
+  }
+  return current_month_cases;
 }
 
 function buildStates(data) {
@@ -344,6 +352,25 @@ const reducer = (state = initialState, action) => {
         statePopulationLoading: false,
         statePopulation: action.statePopulation,
       };
+    case A.FETCH_RETROATIVE_DATA_START:
+      return { ...state, retroativeLoading: true };
+    case A.FETCH_RETROATIVE_DATA_SUCCESS:
+      return {
+        ...state,
+        retroativeLoading: false,
+        daysSinceStarted:
+          state.daysSinceStarted + action.retroativeData.daySinceStarted,
+        months_cases: merge_month(
+          action.retroativeData.report.monthsCases,
+          state.months_cases
+        ),
+        months_deaths: merge_month(
+          action.retroativeData.report.monthsDeaths,
+          state.months_deaths
+        ),
+      };
+    case A.FETCH_RETROATIVE_DATA_FAIL:
+      return state;
     default:
       return state;
   }
