@@ -1,26 +1,30 @@
 const amqp = require('amqplib/callback_api');
 const http = require('http');
 const Subject = require('rxjs/Subject').Subject;
-const fs = require('fs');
 
 const RABBITMQ_SERVER_ADDR = process.env.RABBITMQ_SERVER_ADDR
   ? process.env.RABBITMQ_SERVER_ADDR
   : 'localhost';
 
-const dailyReportRelativePath = './data/dailyReports.json';
-const rawDailyReport = fs.readFileSync(dailyReportRelativePath);
-const dailyReports = JSON.parse(rawDailyReport);
+const BRAZIL_API_ADDR = process.env.BRAZIL_API_ADDR
+  ? process.env.BRAZIL_API_ADDR
+  : 'localhost';
 
-const shutdown = () => {
-  console.log('Received kill signal, shutting down gracefully');
-  fs.writeFile(dailyReportRelativePath, JSON.stringify(dailyReports), err => {
-    if (err) throw err;
-    process.exit(0);
+let dailyReports = [];
+http
+  .get(`http://${BRAZIL_API_ADDR}:8080/daily-reports`, res => {
+    let data = '';
+    res.on('data', chunk => {
+      data += chunk;
+    });
+
+    res.on('end', () => {
+      dailyReports = JSON.parse(data);
+    });
+  })
+  .on('error', err => {
+    throw err;
   });
-};
-
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
 
 const addBrazil = (reports, reportList) => {
   let totalCases = 0;
@@ -77,6 +81,69 @@ const parseDailyReport = (dailyReport, reportList) => {
 
 const dailyReportSubject = new Subject();
 
+const next = dailyReport => {
+  const data = JSON.parse(dailyReport.toString());
+  const reportList = data.reports;
+  data.reports = {};
+
+  addBrazil(data.reports, reportList);
+  parseDailyReport(data, reportList);
+
+  dailyReports.push(data);
+  dailyReportSubject.next(JSON.stringify(data));
+};
+
+// send data to brazil-api
+dailyReportSubject.subscribe(
+  dailyReport => {
+    const options = {
+      hostname: BRAZIL_API_ADDR,
+      port: 8080,
+      path: '/daily-report',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    const req = http.request(options, _ => {});
+    req.on('error', error => {
+      throw error;
+    });
+
+    req.write(dailyReport);
+    req.end();
+  },
+  err => {
+    throw err;
+  },
+  () => console.log('Connection closed')
+);
+
+// sse server
+const server = http.createServer((_, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+
+  dailyReportSubject.subscribe(
+    dailyReport => {
+      res.write(`data: ${dailyReport}\n\n`);
+    },
+    err => {
+      throw err;
+    },
+    () => console.log('Connection closed')
+  );
+});
+
+server.listen(9090);
+console.log('SSE-Server listening at 9090');
+
+// rabbitmq consumer
 amqp.connect(`amqp://${RABBITMQ_SERVER_ADDR}`, (err0, connection) => {
   if (err0) throw err0;
 
@@ -90,47 +157,10 @@ amqp.connect(`amqp://${RABBITMQ_SERVER_ADDR}`, (err0, connection) => {
     channel.consume(
       queue,
       dailyReport => {
-        dailyReportSubject.next(dailyReport.content);
+        next(dailyReport.content);
         channel.ack(dailyReport);
       },
       { noAck: false }
     );
   });
 });
-
-const server = http.createServer((_, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-    'Access-Control-Allow-Origin': '*',
-  });
-
-  dailyReportSubject.subscribe(
-    dailyReport => {
-      const data = JSON.parse(dailyReport.toString());
-      const reportList = data.reports;
-      data.reports = {};
-
-      addBrazil(data.reports, reportList);
-      parseDailyReport(data, reportList);
-
-      dailyReports.push(data);
-
-      fs.writeFile(
-        dailyReportRelativePath,
-        JSON.stringify(dailyReports),
-        err => {
-          if (err) throw err;
-        }
-      );
-
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
-    },
-    err => console.log(err),
-    () => console.log('Connection closed')
-  );
-});
-
-server.listen(9090);
-console.log('SSE-Server listening at 9090');
